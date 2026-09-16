@@ -53,11 +53,10 @@
    The loop tail is handled by always copying 64 bytes from the end.
 */
 
+ENTRY_ALIAS (__memmove_aarch64_sc)
+ENTRY_ALIAS (__memcpy_aarch64_sc)
 ENTRY_ALIAS (__memmove_aarch64)
 ENTRY (__memcpy_aarch64)
-	PTR_ARG (0)
-	PTR_ARG (1)
-	SIZE_ARG (2)
 	add	srcend, src, count
 	add	dstend, dstin, count
 	cmp	count, 128

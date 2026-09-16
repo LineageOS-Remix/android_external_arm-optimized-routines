@@ -1,7 +1,7 @@
 /*
  * Double-precision log2(x) function.
  *
- * Copyright (c) 2018-2019, Arm Limited.
+ * Copyright (c) 2018-2025, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
@@ -9,6 +9,8 @@
 #include <math.h>
 #include <stdint.h>
 #include "math_config.h"
+#include "test_defs.h"
+#include "test_sig.h"
 
 #define T __log2_data.tab
 #define T2 __log2_data.tab2
@@ -29,8 +31,7 @@ top16 (double x)
 double
 log2 (double x)
 {
-  /* double_t for better performance on targets with FLT_EVAL_METHOD==2.  */
-  double_t z, r, r2, r4, y, invc, logc, kd, hi, lo, t1, t2, t3, p;
+  double z, r, r2, r4, y, invc, logc, kd, hi, lo, t1, t2, t3, p;
   uint64_t ix, iz, tmp;
   uint32_t top;
   int k, i;
@@ -53,7 +54,7 @@ log2 (double x)
       hi = r * InvLn2hi;
       lo = r * InvLn2lo + fma (r, InvLn2hi, -hi);
 #else
-      double_t rhi, rlo;
+      double rhi, rlo;
       rhi = asdouble (asuint64 (r) & -1ULL << 32);
       rlo = r - rhi;
       hi = rhi * InvLn2hi;
@@ -96,7 +97,7 @@ log2 (double x)
   invc = T[i].invc;
   logc = T[i].logc;
   z = asdouble (iz);
-  kd = (double_t) k;
+  kd = (double) k;
 
   /* log2(x) = log2(z/c) + log2(c) + k.  */
   /* r ~= z/c - 1, |r| < 1/(2*N).  */
@@ -106,7 +107,7 @@ log2 (double x)
   t1 = r * InvLn2hi;
   t2 = r * InvLn2lo + fma (r, InvLn2hi, -t1);
 #else
-  double_t rhi, rlo;
+  double rhi, rlo;
   /* rounding error: 0x1p-55/N + 0x1p-65.  */
   r = (z - T2[i].chi - T2[i].clo) * invc;
   rhi = asdouble (asuint64 (r) & -1ULL << 32);
@@ -139,3 +140,10 @@ hidden_alias (log2, __ieee754_log2)
 long double log2l (long double x) { return log2 (x); }
 # endif
 #endif
+
+TEST_SIG (S, D, 1, log2, 0.01, 11.1)
+TEST_ULP (log2, 0.05)
+TEST_ULP_NONNEAREST (log2, 0.5)
+TEST_INTERVAL (log2, 0, 0xffff000000000000, 10000)
+TEST_INTERVAL (log2, 0x1p-4, 0x1p4, 40000)
+TEST_INTERVAL (log2, 0, inf, 40000)

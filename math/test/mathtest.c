@@ -6,6 +6,7 @@
  */
 /* clang-format off */
 
+#define _GNU_SOURCE
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,6 +21,13 @@
 
 #ifndef math_errhandling
 # define math_errhandling 0
+#endif
+
+/* Windows does not define this and math_errhandling should always be 0.  */
+#if defined (_WIN32)
+/* Bitmasks for the math_errhandling macro.  */
+# define MATH_ERRNO	1	/* errno set by math functions.  */
+# define MATH_ERREXCEPT	2	/* Exceptions raised by math functions.  */
 #endif
 
 #ifdef __cplusplus
@@ -197,11 +205,9 @@ int is_complex_rettype(int rettype) {
 #define TFUNCARM(arg,ret,name,tolerance) { t_func, arg, ret, (void*)& ARM_PREFIX(name), m_none, tolerance, #name }
 #define MFUNC(arg,ret,name,tolerance) { t_macro, arg, ret, NULL, m_##name, tolerance, #name }
 
-#ifndef PL
 /* sincosf wrappers for easier testing.  */
 static float sincosf_sinf(float x) { float s,c; sincosf(x, &s, &c); return s; }
 static float sincosf_cosf(float x) { float s,c; sincosf(x, &s, &c); return c; }
-#endif
 
 test_func tfuncs[] = {
     /* trigonometric */
@@ -221,10 +227,9 @@ test_func tfuncs[] = {
     TFUNCARM(at_s,rt_s, tanf, 4*ULPUNIT),
     TFUNCARM(at_s,rt_s, sinf, 3*ULPUNIT/4),
     TFUNCARM(at_s,rt_s, cosf, 3*ULPUNIT/4),
-#ifndef PL
     TFUNCARM(at_s,rt_s, sincosf_sinf, 3*ULPUNIT/4),
     TFUNCARM(at_s,rt_s, sincosf_cosf, 3*ULPUNIT/4),
-#endif
+
     /* hyperbolic */
     TFUNC(at_d, rt_d, atanh, 4*ULPUNIT),
     TFUNC(at_d, rt_d, asinh, 4*ULPUNIT),
@@ -1152,7 +1157,7 @@ int runtest(testdetail t) {
     /* Check the result */
     {
         unsigned resultr[2], resulti[2];
-        unsigned tresultr[3], tresulti[3], wres;
+        unsigned tresultr[3], tresulti[3] = {0}, wres;
 
         switch(t.func->rettype) {
         case rt_d:

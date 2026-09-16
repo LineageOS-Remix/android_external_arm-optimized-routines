@@ -1,0 +1,145 @@
+/*
+ * Double-precision vector e^x function.
+ *
+ * Copyright (c) 2023-2026, Arm Limited.
+ * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
+ */
+
+#include "sv_math.h"
+#include "test_sig.h"
+#include "test_defs.h"
+
+/* Value of |x| above which scale overflows without special treatment.
+   ln(2^1022) ~ 708.3964.  */
+#define SpecialBound 0x1.6232bdd7abcd2p+9
+
+/* Values of x which exp overflows or underflows.  */
+#define InfBound 0x1.63p+9		/* 710.0.  */
+#define ZeroBound -0x1.74910d52d3053p+9 /* ~ -745.13.  */
+static const struct data
+{
+  double c0, c2;
+  double c1, c3;
+  double ln2_hi, ln2_lo;
+  double inv_ln2, shift, special_bound, inf_bound, zero_bound;
+} data = {
+  .c0 = 0x1.fffffffffdbcdp-2,
+  .c1 = 0x1.555555555444cp-3,
+  .c2 = 0x1.555573c6a9f7dp-5,
+  .c3 = 0x1.1111266d28935p-7,
+  .ln2_hi = 0x1.62e42fefa3800p-1,
+  .ln2_lo = 0x1.ef35793c76730p-45,
+  /* 1/ln2.  */
+  .inv_ln2 = 0x1.71547652b82fep+0,
+  /* 1.5*2^46+1023. This value is further explained below.  */
+  .shift = 0x1.800000000ffc0p+46,
+  .special_bound = SpecialBound,
+  .inf_bound = InfBound,
+  .zero_bound = ZeroBound,
+};
+
+static inline svfloat64_t
+exp_inline (svfloat64_t x, const svbool_t pg, const struct data *d)
+{
+  /* Use a modifed version of the shift used for flooring, such that x/ln2 is
+    rounded to a multiple of 2^-6=1/64, shift = 1.5 * 2^52 * 2^-6 = 1.5 *
+    2^46.
+
+    n is not an integer but can be written as n = m + i/64, with i and m
+    integer, 0 <= i < 64 and m <= n.
+
+    Bits 5:0 of z will be null every time x/ln2 reaches a new integer value
+    (n=m, i=0), and is incremented every time z (or n) is incremented by 1/64.
+    FEXPA expects i in bits 5:0 of the input so it can be used as index into
+    FEXPA hardwired table T[i] = 2^(i/64) for i = 0:63, that will in turn
+    populate the mantissa of the output. Therefore, we use u=asuint(z) as
+    input to FEXPA.
+
+    We add 1023 to the modified shift value in order to set bits 16:6 of u to
+    1, such that once these bits are moved to the exponent of the output of
+    FEXPA, we get the exponent of 2^n right, i.e. we get 2^m.  */
+  svfloat64_t z = svmla_x (pg, sv_f64 (d->shift), x, d->inv_ln2);
+  svfloat64_t n = svsub_x (pg, z, d->shift);
+
+  svfloat64_t ln2_hi_lo = svld1rq (svptrue_b64 (), &d->ln2_hi);
+  svfloat64_t r = x;
+  r = svmls_lane (r, n, ln2_hi_lo, 0);
+  r = svmls_lane (r, n, ln2_hi_lo, 1);
+
+  svfloat64_t c13 = svld1rq (svptrue_b64 (), &d->c1);
+  svfloat64_t r2 = svmul_x (svptrue_b64 (), r, r);
+  svfloat64_t p01 = svmla_lane (sv_f64 (d->c0), r, c13, 0);
+  svfloat64_t p23 = svmla_lane (sv_f64 (d->c2), r, c13, 1);
+  svfloat64_t p04 = svmla_x (pg, p01, p23, r2);
+  svfloat64_t poly = svmla_x (pg, r, p04, r2);
+
+  svfloat64_t scale = svexpa (svreinterpret_u64 (z));
+
+  return svmla_x (pg, scale, scale, poly);
+}
+
+static svfloat64_t NOINLINE
+special_case (svfloat64_t x, const svbool_t pg, const struct data *d)
+{
+  /* Computes the offset and scale factor based on sign of the input.  */
+  svbool_t is_negative = svcmplt (pg, x, 0.0);
+  svfloat64_t offset = svneg_m (sv_f64 (53.0), is_negative, sv_f64 (53.0));
+  svint64_t scale_adjust = svneg_m (sv_s64 (53), is_negative, sv_s64 (53));
+
+  /* Bounds x between zero_bound and inf_bound, where exp(x) would return
+    0 or inf. By clamping x to these bounds, the behaviour of large values
+    is more predictable.  */
+  x = svmin_x (pg, svmax_x (pg, x, d->zero_bound), d->inf_bound);
+
+  svfloat64_t z = svmla_x (pg, sv_f64 (d->shift), x, d->inv_ln2);
+  svfloat64_t n = svsub_x (pg, z, d->shift);
+
+  svfloat64_t ln2_hi_lo = svld1rq (svptrue_b64 (), &d->ln2_hi);
+  svfloat64_t r = x;
+  r = svmls_lane (r, n, ln2_hi_lo, 0);
+  r = svmls_lane (r, n, ln2_hi_lo, 1);
+
+  svfloat64_t c13 = svld1rq (svptrue_b64 (), &d->c1);
+  svfloat64_t r2 = svmul_x (svptrue_b64 (), r, r);
+  svfloat64_t p01 = svmla_lane (sv_f64 (d->c0), r, c13, 0);
+  svfloat64_t p23 = svmla_lane (sv_f64 (d->c2), r, c13, 1);
+  svfloat64_t p04 = svmla_x (pg, p01, p23, r2);
+  svfloat64_t poly = svmla_x (pg, r, p04, r2);
+
+  /* Computes scale with an offset, which returns:
+    scale = 2^(n - 53).  */
+  z = svsub_x (pg, z, offset);
+  svfloat64_t scale = svexpa (svreinterpret_u64 (z));
+
+  /* Reconstruct y as 2^(n - 53) * (1 + poly(r)).  */
+  svfloat64_t y = svmla_x (pg, scale, scale, poly);
+
+  /* Scale the result by 2^53:
+    2^n * (1 + poly(r)) = 2^53 * 2^(n - 53) * (1 + poly(r)).  */
+  return svscale_x (pg, y, scale_adjust);
+}
+
+/* Vector version of exp
+   The maximum observed error is 0.51 + 0.5 ULP.
+   _ZGVsMxv_exp (0x1.4619d7b04da41p+6)
+    got 0x1.885d9acc41da7p+117
+   want 0x1.885d9acc41da6p+117.  */
+svfloat64_t SV_NAME_D1 (exp) (svfloat64_t x, const svbool_t pg)
+{
+  const struct data *d = ptr_barrier (&data);
+  svbool_t special = svacge (svptrue_b64 (), x, d->special_bound);
+  if (unlikely (svptest_any (special, special)))
+    return special_case (x, pg, d);
+  return exp_inline (x, pg, d);
+}
+
+TEST_SIG (SV, D, 1, exp, -9.9, 9.9)
+TEST_ULP (SV_NAME_D1 (exp), 1.02)
+TEST_SYM_INTERVAL (SV_NAME_D1 (exp), 0, 0x1p-23, 40000)
+TEST_SYM_INTERVAL (SV_NAME_D1 (exp), 0x1p-23, 1, 50000)
+TEST_SYM_INTERVAL (SV_NAME_D1 (exp), 1, SpecialBound, 10000)
+TEST_INTERVAL (SV_NAME_D1 (exp), SpecialBound, InfBound, 10000)
+TEST_INTERVAL (SV_NAME_D1 (exp), -SpecialBound, ZeroBound, 10000)
+TEST_INTERVAL (SV_NAME_D1 (exp), InfBound, inf, 1000)
+TEST_INTERVAL (SV_NAME_D1 (exp), ZeroBound, -inf, 1000)
+CLOSE_SVE_ATTR

@@ -1,7 +1,7 @@
 /*
  * Double-precision log(x) function.
  *
- * Copyright (c) 2018-2019, Arm Limited.
+ * Copyright (c) 2018-2025, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
@@ -9,6 +9,8 @@
 #include <math.h>
 #include <stdint.h>
 #include "math_config.h"
+#include "test_defs.h"
+#include "test_sig.h"
 
 #define T __log_data.tab
 #define T2 __log_data.tab2
@@ -29,8 +31,7 @@ top16 (double x)
 double
 log (double x)
 {
-  /* double_t for better performance on targets with FLT_EVAL_METHOD==2.  */
-  double_t w, z, r, r2, r3, y, invc, logc, kd, hi, lo;
+  double w, z, r, r2, r3, y, invc, logc, kd, hi, lo;
   uint64_t ix, iz, tmp;
   uint32_t top;
   int k, i;
@@ -84,8 +85,8 @@ log (double x)
 # else
       /* Worst-case error is around 0.507 ULP.  */
       w = r * 0x1p27;
-      double_t rhi = r + w - w;
-      double_t rlo = r - rhi;
+      double rhi = r + w - w;
+      double rlo = r - rhi;
       w = rhi * rhi * B[0]; /* B[0] == -0.5.  */
       hi = r + w;
       lo = r - hi + w;
@@ -130,7 +131,7 @@ log (double x)
   /* rounding error: 0x1p-55/N + 0x1p-66.  */
   r = (z - T2[i].chi - T2[i].clo) * invc;
 #endif
-  kd = (double_t) k;
+  kd = (double) k;
 
   /* hi + lo = r + log(c) + k*Ln2.  */
   w = kd * Ln2hi + logc;
@@ -160,3 +161,10 @@ hidden_alias (log, __ieee754_log)
 long double logl (long double x) { return log (x); }
 # endif
 #endif
+
+TEST_SIG (S, D, 1, log, 0.01, 11.1)
+TEST_ULP (log, 0.02)
+TEST_ULP_NONNEAREST (log, 0.5)
+TEST_INTERVAL (log, 0, 0xffff000000000000, 10000)
+TEST_INTERVAL (log, 0x1p-4, 0x1p4, 400000)
+TEST_INTERVAL (log, 0, inf, 400000)

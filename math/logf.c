@@ -1,13 +1,15 @@
 /*
  * Single-precision log function.
  *
- * Copyright (c) 2017-2023, Arm Limited.
+ * Copyright (c) 2017-2025, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
 #include <math.h>
 #include <stdint.h>
 #include "math_config.h"
+#include "test_defs.h"
+#include "test_sig.h"
 
 /*
 LOGF_TABLE_BITS = 4
@@ -26,8 +28,7 @@ Relative error: 1.957 * 2^-26 (before rounding.)
 float
 logf (float x)
 {
-  /* double_t for better performance on targets with FLT_EVAL_METHOD==2.  */
-  double_t z, r, r2, y, y0, invc, logc;
+  double z, r, r2, y, y0, invc, logc;
   uint32_t ix, iz, tmp;
   int k, i;
 
@@ -60,11 +61,11 @@ logf (float x)
   iz = ix - (tmp & 0xff800000);
   invc = T[i].invc;
   logc = T[i].logc;
-  z = (double_t) asfloat (iz);
+  z = asfloat (iz);
 
   /* log(x) = log1p(z/c-1) + log(c) + k*Ln2 */
   r = z * invc - 1;
-  y0 = logc + (double_t) k * Ln2;
+  y0 = logc + (double) k * Ln2;
 
   /* Pipelined polynomial evaluation to approximate log1p(r).  */
   r2 = r * r;
@@ -77,3 +78,10 @@ logf (float x)
 strong_alias (logf, __logf_finite)
 hidden_alias (logf, __ieee754_logf)
 #endif
+
+TEST_SIG (S, F, 1, log, 0.01, 11.1)
+TEST_ULP (logf, 0.32)
+TEST_ULP_NONNEAREST (logf, 0.5)
+TEST_INTERVAL (logf, 0, 0xffff0000, 10000)
+TEST_INTERVAL (logf, 0x1p-4, 0x1p4, 500000)
+TEST_INTERVAL (logf, 0, inf, 50000)

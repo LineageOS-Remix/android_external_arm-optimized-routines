@@ -1,7 +1,7 @@
 /*
  * Double-precision 2^x function.
  *
- * Copyright (c) 2018-2019, Arm Limited.
+ * Copyright (c) 2018-2025, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
@@ -9,6 +9,8 @@
 #include <math.h>
 #include <stdint.h>
 #include "math_config.h"
+#include "test_defs.h"
+#include "test_sig.h"
 
 #define N (1 << EXP_TABLE_BITS)
 #define Shift __exp_data.exp2_shift
@@ -28,9 +30,9 @@
    adjustment of scale, positive k here means the result may overflow and
    negative k means the result may underflow.  */
 static inline double
-specialcase (double_t tmp, uint64_t sbits, uint64_t ki)
+specialcase (double tmp, uint64_t sbits, uint64_t ki)
 {
-  double_t scale, y;
+  double scale, y;
 
   if ((ki & 0x80000000) == 0)
     {
@@ -50,7 +52,7 @@ specialcase (double_t tmp, uint64_t sbits, uint64_t ki)
 	 range to avoid double rounding that can cause 0.5+E/2 ulp error where
 	 E is the worst-case ulp error outside the subnormal range.  So this
 	 is only useful if the goal is better than 1 ulp worst-case error.  */
-      double_t hi, lo;
+      double hi, lo;
       lo = scale - y + scale * tmp;
       hi = 1.0 + y;
       lo = 1.0 - hi + y + lo;
@@ -77,8 +79,7 @@ exp2 (double x)
 {
   uint32_t abstop;
   uint64_t ki, idx, top, sbits;
-  /* double_t for better performance on targets with FLT_EVAL_METHOD==2.  */
-  double_t kd, r, r2, scale, tail, tmp;
+  double kd, r, r2, scale, tail, tmp;
 
   abstop = top12 (x) & 0x7ff;
   if (unlikely (abstop - top12 (0x1p-54) >= top12 (512.0) - top12 (0x1p-54)))
@@ -141,3 +142,10 @@ hidden_alias (exp2, __ieee754_exp2)
 long double exp2l (long double x) { return exp2 (x); }
 # endif
 #endif
+
+TEST_SIG (S, D, 1, exp2, -9.9, 9.9)
+TEST_ULP (exp2, 0.01)
+TEST_ULP_NONNEAREST (exp2, 0.5)
+TEST_INTERVAL (exp2, 0, 0xffff000000000000, 10000)
+TEST_SYM_INTERVAL (exp2, 0x1p-6, 0x1p6, 40000)
+TEST_SYM_INTERVAL (exp2, 633.3, 733.3, 10000)

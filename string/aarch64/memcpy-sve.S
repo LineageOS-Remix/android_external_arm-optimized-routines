@@ -13,8 +13,6 @@
 
 #include "asmdefs.h"
 
-#ifdef HAVE_SVE
-
 .arch armv8-a+sve
 
 #define dstin	x0
@@ -51,13 +49,9 @@
 
 ENTRY_ALIAS (__memmove_aarch64_sve)
 ENTRY (__memcpy_aarch64_sve)
-	PTR_ARG (0)
-	PTR_ARG (1)
-	SIZE_ARG (2)
-
+	cntb	vlen
 	cmp	count, 128
 	b.hi	L(copy_long)
-	cntb	vlen
 	cmp	count, vlen, lsl 1
 	b.hi	L(copy32_128)
 
@@ -80,6 +74,8 @@ L(copy32_128):
 	stp	A_q, B_q, [dstin]
 	stp	C_q, D_q, [dstend, -32]
 	ret
+
+	.p2align 4
 
 	/* Copy 65..128 bytes.  */
 L(copy128):
@@ -135,6 +131,9 @@ L(copy64_from_end):
 	stp	A_q, B_q, [dstend, -32]
 	ret
 
+	.p2align 4
+	nop
+
 	/* Large backwards copy for overlapping copies.
 	   Copy 16 bytes and then align srcend to 16-byte alignment.  */
 L(copy_long_backwards):
@@ -173,5 +172,3 @@ L(return):
 	ret
 
 END (__memcpy_aarch64_sve)
-
-#endif

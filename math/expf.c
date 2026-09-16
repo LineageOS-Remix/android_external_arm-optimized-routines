@@ -1,13 +1,15 @@
 /*
  * Single-precision e^x function.
  *
- * Copyright (c) 2017-2019, Arm Limited.
+ * Copyright (c) 2017-2025, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
 #include <math.h>
 #include <stdint.h>
 #include "math_config.h"
+#include "test_defs.h"
+#include "test_sig.h"
 
 /*
 EXP2F_TABLE_BITS = 5
@@ -35,10 +37,9 @@ expf (float x)
 {
   uint32_t abstop;
   uint64_t ki, t;
-  /* double_t for better performance on targets with FLT_EVAL_METHOD==2.  */
-  double_t kd, xd, z, r, r2, y, s;
+  double kd, xd, z, r, r2, y, s;
 
-  xd = (double_t) x;
+  xd = x;
   abstop = top12 (x) & 0x7ff;
   if (unlikely (abstop >= top12 (88.0f)))
     {
@@ -89,3 +90,9 @@ expf (float x)
 strong_alias (expf, __expf_finite)
 hidden_alias (expf, __ieee754_expf)
 #endif
+
+TEST_SIG (S, F, 1, exp, -9.9, 9.9)
+TEST_ULP (expf, 0.01)
+TEST_ULP_NONNEAREST (expf, 0.5)
+TEST_INTERVAL (expf, 0, 0xffff0000, 10000)
+TEST_SYM_INTERVAL (expf, 0x1p-14, 0x1p8, 500000)
