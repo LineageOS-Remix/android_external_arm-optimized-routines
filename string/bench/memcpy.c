@@ -126,7 +126,7 @@ init_copy_distribution (void)
   assert (n == ALIGN_NUM);
 }
 
-static size_t
+static uint64_t
 init_copies (size_t max_size)
 {
   size_t total = 0;
