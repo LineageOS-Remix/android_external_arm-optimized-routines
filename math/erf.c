@@ -1,7 +1,7 @@
 /*
  * Double-precision erf(x) function.
  *
- * Copyright (c) 2020-2024, Arm Limited.
+ * Copyright (c) 2020-2026, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
@@ -41,7 +41,7 @@ erf (double x)
   uint32_t ia = ix & 0x7fffffff;
   uint32_t sign = ix >> 31;
 
-  /* Normalized and subnormal cases */
+  /* Normalized and subnormal cases.  */
   if (ia < 0x3feb0000)
     { /* a = |x| < 0.84375.  */
 
@@ -49,7 +49,7 @@ erf (double x)
 	{ /* a < 2^(-28).  */
 	  if (ia < 0x00800000)
 	    { /* a < 2^(-1015).  */
-	      double y =  fma (TwoOverSqrtPiMinusOne, x, x);
+	      double y = fma (TwoOverSqrtPiMinusOne, x, x);
 	      return check_uflow (y);
 	    }
 	  return x + TwoOverSqrtPiMinusOne * x;

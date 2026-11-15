@@ -14,3 +14,6 @@ ForEachMacros:
   - 'list_for_each'
   - 'list_for_each_prev'
   - 'list_for_each_prev_safe'
+StatementMacros:
+  - 'strong_alias'
+  - 'hidden_alias'

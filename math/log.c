@@ -1,7 +1,7 @@
 /*
  * Double-precision log(x) function.
  *
- * Copyright (c) 2018-2025, Arm Limited.
+ * Copyright (c) 2018-2026, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
@@ -57,25 +57,30 @@ log (double x)
       r3 = r * r2;
 #if LOG_POLY1_ORDER == 10
       /* Worst-case error is around 0.516 ULP.  */
-      y = r3 * (B[1] + r * B[2] + r2 * B[3]
-		+ r3 * (B[4] + r * B[5] + r2 * B[6] + r3 * (B[7] + r * B[8])));
+      y = r3
+	  * (B[1] + r * B[2] + r2 * B[3]
+	     + r3 * (B[4] + r * B[5] + r2 * B[6] + r3 * (B[7] + r * B[8])));
       w = B[0] * r2; /* B[0] == -0.5.  */
       hi = r + w;
       y += r - hi + w;
       y += hi;
 #elif LOG_POLY1_ORDER == 11
       /* Worst-case error is around 0.516 ULP.  */
-      y = r3 * (B[1] + r * B[2]
-		+ r2 * (B[3] + r * B[4] + r2 * B[5]
-			+ r3 * (B[6] + r * B[7] + r2 * B[8] + r3 * B[9])));
+      y = r3
+	  * (B[1] + r * B[2]
+	     + r2
+		   * (B[3] + r * B[4] + r2 * B[5]
+		      + r3 * (B[6] + r * B[7] + r2 * B[8] + r3 * B[9])));
       w = B[0] * r2; /* B[0] == -0.5.  */
       hi = r + w;
       y += r - hi + w;
       y += hi;
 #elif LOG_POLY1_ORDER == 12
-      y = r3 * (B[1] + r * B[2] + r2 * B[3]
-		+ r3 * (B[4] + r * B[5] + r2 * B[6]
-			+ r3 * (B[7] + r * B[8] + r2 * B[9] + r3 * B[10])));
+      y = r3
+	  * (B[1] + r * B[2] + r2 * B[3]
+	     + r3
+		   * (B[4] + r * B[5] + r2 * B[6]
+		      + r3 * (B[7] + r * B[8] + r2 * B[9] + r3 * B[10])));
 # if N <= 64
       /* Worst-case error is around 0.532 ULP.  */
       w = B[0] * r2; /* B[0] == -0.5.  */
@@ -116,7 +121,7 @@ log (double x)
      The ith subinterval contains z and c is near its center.  */
   tmp = ix - OFF;
   i = (tmp >> (52 - LOG_TABLE_BITS)) % N;
-  k = (int64_t) tmp >> 52; /* arithmetic shift */
+  k = (int64_t) tmp >> 52; /* Arithmetic shift.  */
   iz = ix - (tmp & 0xfffULL << 52);
   invc = T[i].invc;
   logc = T[i].logc;
@@ -145,11 +150,13 @@ log (double x)
      Worst case error if |y| > 0x1p-4:
      0.5 + 2.06/N + abs-poly-error*2^56 ULP (+ 0.001 ULP without fma).  */
 #if LOG_POLY_ORDER == 6
-  y = lo + r2 * A[0] + r * r2 * (A[1] + r * A[2] + r2 * (A[3] + r * A[4])) + hi;
+  y = lo + r2 * A[0] + r * r2 * (A[1] + r * A[2] + r2 * (A[3] + r * A[4]))
+      + hi;
 #elif LOG_POLY_ORDER == 7
   y = lo
-      + r2 * (A[0] + r * A[1] + r2 * (A[2] + r * A[3])
-	      + r2 * r2 * (A[4] + r * A[5]))
+      + r2
+	    * (A[0] + r * A[1] + r2 * (A[2] + r * A[3])
+	       + r2 * r2 * (A[4] + r * A[5]))
       + hi;
 #endif
   return eval_as_double (y);
@@ -158,7 +165,11 @@ log (double x)
 strong_alias (log, __log_finite)
 hidden_alias (log, __ieee754_log)
 # if LDBL_MANT_DIG == 53
-long double logl (long double x) { return log (x); }
+long double
+logl (long double x)
+{
+  return log (x);
+}
 # endif
 #endif
 

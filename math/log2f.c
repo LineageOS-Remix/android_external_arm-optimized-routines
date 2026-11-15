@@ -1,7 +1,7 @@
 /*
  * Single-precision log2 function.
  *
- * Copyright (c) 2017-2025, Arm Limited.
+ * Copyright (c) 2017-2026, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
@@ -16,8 +16,7 @@ LOG2F_TABLE_BITS = 4
 LOG2F_POLY_ORDER = 4
 
 ULP error: 0.752 (nearest rounding.)
-Relative error: 1.9 * 2^-26 (before rounding.)
-*/
+Relative error: 1.9 * 2^-26 (before rounding).  */
 
 #define N (1 << LOG2F_TABLE_BITS)
 #define T __log2f_data.tab
@@ -58,12 +57,12 @@ log2f (float x)
   i = (tmp >> (23 - LOG2F_TABLE_BITS)) % N;
   top = tmp & 0xff800000;
   iz = ix - top;
-  k = (int32_t) tmp >> 23; /* arithmetic shift */
+  k = (int32_t) tmp >> 23; /* Arithmetic shift.  */
   invc = T[i].invc;
   logc = T[i].logc;
   z = asfloat (iz);
 
-  /* log2(x) = log1p(z/c-1)/ln2 + log2(c) + k */
+  /* log2(x) = log1p(z/c-1)/ln2 + log2(c) + k.  */
   r = z * invc - 1;
   y0 = logc + (double) k;
 

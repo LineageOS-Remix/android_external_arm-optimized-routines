@@ -1,7 +1,7 @@
 /*
  * Double-precision 2^x function.
  *
- * Copyright (c) 2018-2025, Arm Limited.
+ * Copyright (c) 2018-2026, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
@@ -108,7 +108,7 @@ exp2 (double x)
   /* x = k/N + r, with int k and r in [-1/2N, 1/2N].  */
   kd = eval_as_double (x + Shift);
   ki = asuint64 (kd); /* k.  */
-  kd -= Shift; /* k/N for int k.  */
+  kd -= Shift;	      /* k/N for int k.  */
   r = x - kd;
   /* 2^(k/N) ~= scale * (1 + tail).  */
   idx = 2 * (ki % N);
@@ -126,7 +126,8 @@ exp2 (double x)
 #elif EXP2_POLY_ORDER == 5
   tmp = tail + r * C1 + r2 * (C2 + r * C3) + r2 * r2 * (C4 + r * C5);
 #elif EXP2_POLY_ORDER == 6
-  tmp = tail + r * C1 + r2 * (0.5 + r * C3) + r2 * r2 * (C4 + r * C5 + r2 * C6);
+  tmp = tail + r * C1 + r2 * (0.5 + r * C3)
+	+ r2 * r2 * (C4 + r * C5 + r2 * C6);
 #endif
   if (unlikely (abstop == 0))
     return specialcase (tmp, sbits, ki);
@@ -139,7 +140,11 @@ exp2 (double x)
 strong_alias (exp2, __exp2_finite)
 hidden_alias (exp2, __ieee754_exp2)
 # if LDBL_MANT_DIG == 53
-long double exp2l (long double x) { return exp2 (x); }
+long double
+exp2l (long double x)
+{
+  return exp2 (x);
+}
 # endif
 #endif
 

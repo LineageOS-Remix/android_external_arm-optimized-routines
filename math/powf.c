@@ -169,7 +169,7 @@ powf (float x, float y)
 
   /* Check whether |y*log(x)| >= 126.  */
   if (unlikely ((asuint64 (ylogx) >> 47 & 0xffff)
-		 >= asuint64 (126.0 * POWF_SCALE) >> 47))
+		>= asuint64 (126.0 * POWF_SCALE) >> 47))
     {
       if (ylogx <= -150.0 * POWF_SCALE)
 	return __math_uflowf (sign_bias);

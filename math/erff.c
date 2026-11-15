@@ -1,7 +1,7 @@
 /*
  * Single-precision erf(x) function.
  *
- * Copyright (c) 2020-2024, Arm Limited.
+ * Copyright (c) 2020-2026, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
@@ -55,7 +55,8 @@ erff (float x)
 
       x2 = x * x;
 
-      /* Normalized cases (|x| < 0.921875). Use Horner scheme for x+x*P(x^2).  */
+      /* Normalized cases (|x| < 0.921875). Use Horner scheme for x+x*P(x^2).
+       */
       r = A[5];
       r = fmaf (r, x2, A[4]);
       r = fmaf (r, x2, A[3]);
@@ -68,7 +69,8 @@ erff (float x)
     { /* |x| < 4.0 - Use a custom Estrin scheme.  */
 
       float a = fabsf (x);
-      /* Start with Estrin scheme on high order (small magnitude) coefficients.  */
+      /* Start with Estrin scheme on high order (small magnitude) coefficients.
+       */
       r = fmaf (B[6], a, B[5]);
       u = fmaf (B[4], a, B[3]);
       x2 = x * x;

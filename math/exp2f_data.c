@@ -1,7 +1,7 @@
 /*
  * Shared data between expf, exp2f and powf.
  *
- * Copyright (c) 2017-2018, Arm Limited.
+ * Copyright (c) 2017-2026, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
@@ -12,7 +12,7 @@
 const struct exp2f_data __exp2f_data = {
   /* tab[i] = uint(2^(i/N)) - (i << 52-BITS)
      used for computing 2^(k/N) for an int |k| < 150 N as
-     double(tab[k%N] + (k << 52-BITS)) */
+     double(tab[k%N] + (k << 52-BITS)).  */
   .tab = {
 #if N == 8
 0x3ff0000000000000, 0x3fef72b83c7d517b, 0x3fef06fe0a31b715, 0x3feebfdad5362a27,

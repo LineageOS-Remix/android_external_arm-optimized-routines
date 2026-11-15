@@ -1,7 +1,7 @@
 /*
  * Double-precision log2(x) function.
  *
- * Copyright (c) 2018-2025, Arm Limited.
+ * Copyright (c) 2018-2026, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
@@ -67,8 +67,9 @@ log2 (double x)
       p = r2 * (B[0] + r * B[1]);
       y = hi + p;
       lo += hi - y + p;
-      lo += r4 * (B[2] + r * B[3] + r2 * (B[4] + r * B[5])
-		  + r4 * (B[6] + r * B[7] + r2 * (B[8] + r * B[9])));
+      lo += r4
+	    * (B[2] + r * B[3] + r2 * (B[4] + r * B[5])
+	       + r4 * (B[6] + r * B[7] + r2 * (B[8] + r * B[9])));
       y += lo;
 #endif
       return eval_as_double (y);
@@ -92,7 +93,7 @@ log2 (double x)
      The ith subinterval contains z and c is near its center.  */
   tmp = ix - OFF;
   i = (tmp >> (52 - LOG2_TABLE_BITS)) % N;
-  k = (int64_t) tmp >> 52; /* arithmetic shift */
+  k = (int64_t) tmp >> 52; /* Arithmetic shift.  */
   iz = ix - (tmp & 0xfffULL << 52);
   invc = T[i].invc;
   logc = T[i].logc;
@@ -137,7 +138,11 @@ log2 (double x)
 strong_alias (log2, __log2_finite)
 hidden_alias (log2, __ieee754_log2)
 # if LDBL_MANT_DIG == 53
-long double log2l (long double x) { return log2 (x); }
+long double
+log2l (long double x)
+{
+  return log2 (x);
+}
 # endif
 #endif
 

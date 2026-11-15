@@ -1,7 +1,7 @@
 /*
  * Double-precision e^x function.
  *
- * Copyright (c) 2018-2025, Arm Limited.
+ * Copyright (c) 2018-2026, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
@@ -164,7 +164,11 @@ exp (double x)
 strong_alias (exp, __exp_finite)
 hidden_alias (exp, __ieee754_exp)
 # if LDBL_MANT_DIG == 53
-long double expl (long double x) { return exp (x); }
+long double
+expl (long double x)
+{
+  return exp (x);
+}
 # endif
 #endif
 

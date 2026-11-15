@@ -1,7 +1,7 @@
 /*
  * Double-precision 10^x function.
  *
- * Copyright (c) 2023-2025, Arm Limited.
+ * Copyright (c) 2023-2026, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
@@ -59,7 +59,8 @@ special_case (uint64_t sbits, double tmp, uint64_t ki)
   return check_uflow (y);
 }
 
-/* Double-precision 10^x approximation. Largest observed error is ~0.513 ULP.  */
+/* Double-precision 10^x approximation.
+   The maximum observed error is 0.013 + 0.5 ULP.  */
 double
 exp10 (double x)
 {

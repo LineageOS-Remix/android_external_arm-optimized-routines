@@ -88,7 +88,8 @@ log_inline (uint64_t ix, double *tail)
   /* p = log1p(r) - r - A[0]*r*r.  */
 #if POW_LOG_POLY_ORDER == 8
   p = (ar3
-       * (A[1] + r * A[2] + ar2 * (A[3] + r * A[4] + ar2 * (A[5] + r * A[6]))));
+       * (A[1] + r * A[2]
+	  + ar2 * (A[3] + r * A[4] + ar2 * (A[5] + r * A[6]))));
 #endif
   lo = lo1 + lo2 + lo3 + lo4 + p;
   y = hi + lo;
@@ -135,7 +136,7 @@ specialcase (double tmp, uint64_t sbits, uint64_t ki)
 	return DBL_MAX;
 #endif
       return check_oflow (eval_as_double (y * 0x1p1009));
-   }
+    }
   /* k < 0, need special care in the subnormal range.  */
   sbits += 1022ull << 52;
   /* Note: sbits is signed scale.  */
@@ -349,7 +350,11 @@ pow (double x, double y)
 strong_alias (pow, __pow_finite)
 hidden_alias (pow, __ieee754_pow)
 # if LDBL_MANT_DIG == 53
-long double powl (long double x, long double y) { return pow (x, y); }
+long double
+powl (long double x, long double y)
+{
+  return pow (x, y);
+}
 # endif
 #endif
 

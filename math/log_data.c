@@ -1,7 +1,7 @@
 /*
  * Data for log.
  *
- * Copyright (c) 2018, Arm Limited.
+ * Copyright (c) 2018-2026, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
@@ -505,7 +505,7 @@ that logc + poly(z/c - 1) has small error, however near x == 1 when
 {0x1.5b00003c93e92p+0, -0x1.f41080abf0ccp-54},
 {0x1.5d0001d4919bcp+0, -0x1.8812afb254729p-54},
 {0x1.5efffe7b87a89p+0, -0x1.47eb780ed6904p-54},
-#endif
+# endif
 },
-#endif /* !HAVE_FAST_FMA */
+#endif
 };

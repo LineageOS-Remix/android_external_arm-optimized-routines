@@ -1,7 +1,7 @@
 /*
  * Double-precision log10(x) function.
  *
- * Copyright (c) 2020-2025, Arm Limited.
+ * Copyright (c) 2020-2026, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
@@ -129,19 +129,17 @@ log10 (double x)
   return eval_as_double (y);
 }
 
-// clang-format off
 #if USE_GLIBC_ABI
 strong_alias (log10, __log10_finite)
 hidden_alias (log10, __ieee754_log10)
-#if LDBL_MANT_DIG == 53
+# if LDBL_MANT_DIG == 53
 long double
 log10l (long double x)
 {
   return log10 (x);
 }
+# endif
 #endif
-#endif
-// clang-format on
 
 TEST_SIG (S, D, 1, log10, 0.01, 11.1)
 TEST_ULP (log10, 1.11)

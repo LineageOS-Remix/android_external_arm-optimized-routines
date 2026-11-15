@@ -1,7 +1,7 @@
 /*
  * Single-precision 2^x function.
  *
- * Copyright (c) 2017-2025, Arm Limited.
+ * Copyright (c) 2017-2026, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
@@ -18,8 +18,7 @@ EXP2F_POLY_ORDER = 3
 ULP error: 0.502 (nearest rounding.)
 Relative error: 1.69 * 2^-34 in [-1/64, 1/64] (before rounding.)
 Wrong count: 168353 (all nearest rounding wrong results with fma.)
-Non-nearest ULP error: 1 (rounded ULP error)
-*/
+Non-nearest ULP error: 1 (rounded ULP error).  */
 
 #define N (1 << EXP2F_TABLE_BITS)
 #define T __exp2f_data.tab
@@ -64,7 +63,7 @@ exp2f (float x)
   kd -= SHIFT; /* k/N for int k.  */
   r = xd - kd;
 
-  /* exp2(x) = 2^(k/N) * 2^r ~= s * (C0*r^3 + C1*r^2 + C2*r + 1) */
+  /* exp2(x) = 2^(k/N) * 2^r ~= s * (C0*r^3 + C1*r^2 + C2*r + 1).  */
   t = T[ki % N];
   t += ki << (52 - EXP2F_TABLE_BITS);
   s = asdouble (t);

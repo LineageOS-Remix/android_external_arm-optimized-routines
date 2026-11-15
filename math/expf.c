@@ -1,7 +1,7 @@
 /*
  * Single-precision e^x function.
  *
- * Copyright (c) 2017-2025, Arm Limited.
+ * Copyright (c) 2017-2026, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
@@ -18,8 +18,7 @@ EXP2F_POLY_ORDER = 3
 ULP error: 0.502 (nearest rounding.)
 Relative error: 1.69 * 2^-34 in [-ln2/64, ln2/64] (before rounding.)
 Wrong count: 170635 (all nearest rounding wrong results with fma.)
-Non-nearest ULP error: 1 (rounded ULP error)
-*/
+Non-nearest ULP error: 1 (rounded ULP error).  */
 
 #define N (1 << EXP2F_TABLE_BITS)
 #define InvLn2N __exp2f_data.invln2_scaled
@@ -48,12 +47,12 @@ expf (float x)
 	return 0.0f;
       if (abstop >= top12 (INFINITY))
 	return x + x;
-      if (x > 0x1.62e42ep6f) /* x > log(0x1p128) ~= 88.72 */
+      if (x > 0x1.62e42ep6f) /* x > log(0x1p128) ~= 88.72.  */
 	return __math_oflowf (0);
-      if (x < -0x1.9fe368p6f) /* x < log(0x1p-150) ~= -103.97 */
+      if (x < -0x1.9fe368p6f) /* x < log(0x1p-150) ~= -103.97.  */
 	return __math_uflowf (0);
 #if WANT_ERRNO_UFLOW
-      if (x < -0x1.9d1d9ep6f) /* x < log(0x1p-149) ~= -103.28 */
+      if (x < -0x1.9d1d9ep6f) /* x < log(0x1p-149) ~= -103.28.  */
 	return __math_may_uflowf (0);
 #endif
     }
@@ -75,7 +74,7 @@ expf (float x)
 #endif
   r = z - kd;
 
-  /* exp(x) = 2^(k/N) * 2^(r/N) ~= s * (C0*r^3 + C1*r^2 + C2*r + 1) */
+  /* exp(x) = 2^(k/N) * 2^(r/N) ~= s * (C0*r^3 + C1*r^2 + C2*r + 1).  */
   t = T[ki % N];
   t += ki << (52 - EXP2F_TABLE_BITS);
   s = asdouble (t);

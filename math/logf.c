@@ -1,7 +1,7 @@
 /*
  * Single-precision log function.
  *
- * Copyright (c) 2017-2025, Arm Limited.
+ * Copyright (c) 2017-2026, Arm Limited.
  * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
@@ -16,8 +16,7 @@ LOGF_TABLE_BITS = 4
 LOGF_POLY_ORDER = 4
 
 ULP error: 0.818 (nearest rounding.)
-Relative error: 1.957 * 2^-26 (before rounding.)
-*/
+Relative error: 1.957 * 2^-26 (before rounding).  */
 
 #define T __logf_data.tab
 #define A __logf_data.poly
@@ -57,13 +56,13 @@ logf (float x)
      The ith subinterval contains z and c is near its center.  */
   tmp = ix - OFF;
   i = (tmp >> (23 - LOGF_TABLE_BITS)) % N;
-  k = (int32_t) tmp >> 23; /* arithmetic shift */
+  k = (int32_t) tmp >> 23; /* Arithmetic shift.  */
   iz = ix - (tmp & 0xff800000);
   invc = T[i].invc;
   logc = T[i].logc;
   z = asfloat (iz);
 
-  /* log(x) = log1p(z/c-1) + log(c) + k*Ln2 */
+  /* log(x) = log1p(z/c-1) + log(c) + k*Ln2.  */
   r = z * invc - 1;
   y0 = logc + (double) k * Ln2;
 
